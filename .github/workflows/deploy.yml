@@ -35,8 +35,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           protocol: ftp # Change to sftp if needed
-          sync-strategy: incremental # Upload only new or changed files
-
+          state-name: .ftp-deploy-sync-state.json
       # Step 5: Deploy to cPanel server (SSH)
       - name: Deploy Laravel Project
         run: |
