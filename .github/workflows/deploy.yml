@@ -1,0 +1,49 @@
+name: Deploy Laravel to cPanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: FTP Deploy to cPanel
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code from GitHub
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up PHP and Composer
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      # Step 3: Install Dependencies
+      - name: Install PHP Dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
+
+      # Step 4: Deploy via FTP
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@4.3.3
+        with:
+          server: ${{ secrets.SERVER }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          protocol: ftp # Change to sftp if needed
+          sync-strategy: incremental # Upload only new or changed files
+
+      # Step 5: Deploy to cPanel server (SSH)
+      - name: Deploy Laravel Project
+        run: |
+          composer install --no-dev --optimize-autoloader
+          php artisan migrate --force
+          php artisan cache:clear
+          php artisan config:cache
+          php artisan route:cache
+          chmod -R 775 storage bootstrap/cache
+
